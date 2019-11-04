@@ -1,0 +1,17 @@
+{
+  "ver": "1.0.22",
+  "uuid": "7e61c011-4cdc-454d-a27a-82a7f6825dc3",
+  "compiledShaders": [
+    {
+      "glsl1": {
+        "vert": "\nprecision highp float;\nuniform mat4 cc_matViewProj;\n\nattribute vec3 a_position;\nattribute vec2 a_uv0;\nvarying vec2 uv0;\nvoid main () {\n    vec4 pos = cc_matViewProj * vec4(a_position, 1);\n    gl_Position = pos;\n    uv0 = a_uv0;\n}\n",
+        "frag": "\nprecision highp float;\n\nuniform sampler2D texture;\nvarying vec2 uv0;\nuniform vec4 color;\nuniform float time;\nuniform float width;\nuniform float strength;\nuniform float offset;\nvoid main()\n{\n    vec4 src_color = color * texture2D(texture, uv0).rgba;\n    float start = tan(time/1.414);\n\n    if(uv0.x < (start - offset * uv0.y) &&  uv0.x > (start - offset * uv0.y - width))\n    {\n        vec3 improve = strength * vec3(255, 255, 255);\n        vec3 result = improve * vec3( src_color.r, src_color.g, src_color.b);\n        gl_FragColor = vec4(result, src_color.a);\n\n    }else{\n        gl_FragColor = src_color;\n    }\n}\n"
+      },
+      "glsl3": {
+        "vert": "\nprecision highp float;\nuniform CCGlobal {\n  vec4 cc_time;\n\n  vec4 cc_screenSize;\n\n  vec4 cc_screenScale;\n\n  vec4 cc_nativeSize;\n\n  mat4 cc_matView;\n  mat4 cc_matViewInv;\n  mat4 cc_matProj;\n  mat4 cc_matProjInv;\n  mat4 cc_matViewProj;\n  mat4 cc_matViewProjInv;\n  vec4 cc_cameraPos;\n\n  vec4 cc_exposure;\n\n  vec4 cc_mainLitDir;\n\n  vec4 cc_mainLitColor;\n\n  vec4 cc_ambientSky;\n  vec4 cc_ambientGround;\n};\nuniform CCLocal {\n  mat4 cc_matWorld;\n  mat4 cc_matWorldIT;\n};\n\nin vec3 a_position;\nin vec2 a_uv0;\nout vec2 uv0;\nvoid main () {\n    vec4 pos = cc_matViewProj * vec4(a_position, 1);\n    gl_Position = pos;\n    uv0 = a_uv0;\n}\n",
+        "frag": "\nprecision highp float;\n\nuniform sampler2D texture;\nin vec2 uv0;\nuniform RABS{\n  vec4 color;\n  float time;\n\n  float width;\n  float strength;\n  float offset;\n}\n\nvoid main()\n{\n    vec4 src_color = color * texture2D(texture, uv0).rgba;\n    float start = tan(time/1.414);\n\n    if(uv0.x < (start - offset * uv0.y) &&  uv0.x > (start - offset * uv0.y - width))\n    {\n        vec3 improve = strength * vec3(255, 255, 255);\n        vec3 result = improve * vec3( src_color.r, src_color.g, src_color.b);\n        gl_FragColor = vec4(result, src_color.a);\n\n    }else{\n        gl_FragColor = src_color;\n    }\n}\n"
+      }
+    }
+  ],
+  "subMetas": {}
+}

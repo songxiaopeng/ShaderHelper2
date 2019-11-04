@@ -1,0 +1,82 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.  
+
+// Note: Current format version is experiment, the format may be changed.
+// The future format may not be compatible, you may need to update the script manually.
+
+// 注意：当前版本的格式是实验性的，之后还会进行修改。
+// 后续版本的格式不保证兼容当前格式，可能需要手动升级到最新版本。，
+CCEffect %{
+  techniques:
+  - passes: 
+    - vert: vs
+      frag: fs
+      rasterizerState:
+        cullMode: none
+      blendState:
+        targets:
+        - blend: true
+      properties:
+      texture: { value: white }
+      iCenter: { value: [0.5,0.5], inspector: { type: vec2 } }
+      iResolution: { value: [1280, 720, 0], inspector: { type: vec4 } }
+      Strength: { value: 0.125, inspector: { type: float } }
+}%
+
+CCProgram vs %{
+
+precision highp float;
+
+#include <cc-global>
+#include <cc-local>
+in vec3 a_position;
+in vec2 a_uv0;
+out vec2 uv0;
+void main () {
+    vec4 pos = cc_matViewProj * vec4(a_position, 1);
+    gl_Position = pos;
+    uv0 = a_uv0;
+}
+}%
+
+CCProgram fs %{
+
+precision highp float;
+
+uniform sampler2D texture;
+
+uniform RABS{
+  vec4 iResolution;
+  vec2 iCenter;
+  float Strength;
+  // vec2 uv0;
+}
+// uniform vec3 iResolution;
+// uniform vec2 iCenter;
+// uniform float Strength;
+varying vec2 uv0;
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // const float Strength = 0.125;    
+    const int Samples = 64; //multiple of 2
+    
+    vec2 uv = fragCoord.xy;
+    
+    vec2 dir = (fragCoord.xy-iCenter.xy);
+
+    vec4 color = vec4(0.0,0.0,0.0,0.0);
+    
+    for (int i = 0; i < Samples; i += 2) //operating at 2 samples for better performance
+    {
+        color += texture2D(texture,uv+float(i)/float(Samples)*dir*Strength);
+        color += texture2D(texture,uv+float(i+1)/float(Samples)*dir*Strength);
+    }   
+    
+    fragColor = color/float(Samples);
+}
+    
+void main(void)
+{
+    mainImage(gl_FragColor, uv0);
+}
+}%

@@ -1,0 +1,70 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.  
+
+// Note: Current format version is experiment, the format may be changed.
+// The future format may not be compatible, you may need to update the script manually.
+
+// 注意：当前版本的格式是实验性的，之后还会进行修改。
+// 后续版本的格式不保证兼容当前格式，可能需要手动升级到最新版本。，
+CCEffect %{
+  techniques: 
+    - passes: 
+      - vert: vs
+        frag: fs
+        rasterizerState:
+          cullMode: none
+        blendState:
+          targets:
+          - blend: true
+        properties:
+          texture: { value: white }
+          color: { value: [1,1,1,1], inspector: { type: color4 }}
+          width: { value: 0.08, inspector: { type: float }}
+          strength: { value: 0.008, inspector: { type: float }}
+          offset: { value: 0.5, inspector: { type: float }}
+}%
+
+CCProgram vs %{
+precision highp float;
+  #include <cc-global>
+  #include <cc-local>
+in vec3 a_position;
+in vec2 a_uv0;
+out vec2 uv0;
+void main () {
+    vec4 pos = cc_matViewProj * vec4(a_position, 1);
+    gl_Position = pos;
+    uv0 = a_uv0;
+}
+}%
+
+CCProgram fs %{
+
+precision highp float;
+
+uniform sampler2D texture;
+in vec2 uv0;
+uniform RABS{
+  vec4 color;
+  float time;
+
+  float width;
+  float strength;
+  float offset;
+}
+
+void main()
+{
+    vec4 src_color = color * texture2D(texture, uv0).rgba;
+    float start = tan(time/1.414);  //流光的起始x坐标
+    
+    if(uv0.x < (start - offset * uv0.y) &&  uv0.x > (start - offset * uv0.y - width))
+    {
+        vec3 improve = strength * vec3(255, 255, 255);
+        vec3 result = improve * vec3( src_color.r, src_color.g, src_color.b);
+        gl_FragColor = vec4(result, src_color.a);
+
+    }else{
+        gl_FragColor = src_color;
+    }
+}
+}%
